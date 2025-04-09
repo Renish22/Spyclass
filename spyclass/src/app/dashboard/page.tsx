@@ -1,46 +1,3 @@
-// export default function Dashboard() {
-//     return (
-//       <div className="space-y-4">
-//         <h2 className="text-2xl font-bold">Dashboard Overview</h2>
-//         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-//           <div className="rounded-lg border bg-card p-4">
-//             <h3 className="text-sm font-medium text-muted-foreground">Total Users</h3>
-//             <p className="mt-2 text-3xl font-bold">1,234</p>
-//           </div>
-//           <div className="rounded-lg border bg-card p-4">
-//             <h3 className="text-sm font-medium text-muted-foreground">Revenue</h3>
-//             <p className="mt-2 text-3xl font-bold">$12,345</p>
-//           </div>
-//           <div className="rounded-lg border bg-card p-4">
-//             <h3 className="text-sm font-medium text-muted-foreground">Active Projects</h3>
-//             <p className="mt-2 text-3xl font-bold">42</p>
-//           </div>
-//           <div className="rounded-lg border bg-card p-4">
-//             <h3 className="text-sm font-medium text-muted-foreground">Conversion Rate</h3>
-//             <p className="mt-2 text-3xl font-bold">8.5%</p>
-//           </div>
-//         </div>
-//         <div className="rounded-lg border bg-card p-6">
-//           <h3 className="text-lg font-medium">Recent Activity</h3>
-//           <div className="mt-4">
-//             <div className="space-y-4">
-//               {[1, 2, 3, 4, 5].map((item) => (
-//                 <div key={item} className="flex justify-between border-b pb-2">
-//                   <div>
-//                     <p className="font-medium">Activity {item}</p>
-//                     <p className="text-sm text-muted-foreground">Description of activity {item}</p>
-//                   </div>
-//                   <div className="text-sm text-muted-foreground">2h ago</div>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   }
-
-
 import React from 'react';
 
 const Dashboard = () => {
@@ -180,37 +137,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      
-      {/* Recent Alerts Section */}
-      <div className="bg-card rounded-lg shadow p-4">
-        <h2 className="text-lg font-semibold mb-4">Recent Alerts</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="py-2 px-4 text-left">Alert Type</th>
-                <th className="py-2 px-4 text-left">Location</th>
-                <th className="py-2 px-4 text-left">Time</th>
-                <th className="py-2 px-4 text-left">Date</th>
-                <th className="py-2 px-4 text-left">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentAlerts.map(alert => (
-                <tr key={alert.id} className="border-b hover:bg-secondary/20">
-                  <td className="py-2 px-4">{alert.type}</td>
-                  <td className="py-2 px-4">{alert.location}</td>
-                  <td className="py-2 px-4">{alert.time}</td>
-                  <td className="py-2 px-4">{alert.date}</td>
-                  <td className="py-2 px-4">
-                    <button className="text-primary hover:underline text-sm">View</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+
     </div>
   );
 };

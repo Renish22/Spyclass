@@ -1,7 +1,8 @@
 // app/people-counting/page.tsx
 'use client';
 
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useRef } from 'react';
+import { Upload, FileText, Clock, Film, Image as ImageIcon, Eye, AlertTriangle } from 'lucide-react';
 
 interface TableRow {
   videoName: string;
@@ -9,8 +10,11 @@ interface TableRow {
   timestamp: string;
 }
 
-export default function PeopleCountingPage() {
+export default function ExamDetectionPage() {
   const [video, setVideo] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [tableData, setTableData] = useState<TableRow[]>([
     {
       videoName: 'sample_video_1.mp4',
@@ -37,7 +41,6 @@ export default function PeopleCountingPage() {
       image: 'frame_5.png',
       timestamp: '2025-04-07 09:35:00',
     },
-
   ]);
 
   const handleVideoUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,67 +50,187 @@ export default function PeopleCountingPage() {
     }
   };
 
-  const handleSubmit = () => {
-    if (video) {
-      const newEntry: TableRow = {
-        videoName: video.name,
-        image: video.name,
-        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      };
-      setTableData([...tableData, newEntry]);
-      setVideo(null);
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
     }
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setVideo(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (video) {
+      // In a real app, you would process the video and extract suspicious frames
+      // Here we just add a mock entry
+      const newEntry: TableRow = {
+        videoName: video.name,
+        image: `suspicious_frame_${Math.floor(Math.random() * 100)}.png`,
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      };
+      setTableData([newEntry, ...tableData]);
+      setVideo(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const openFileSelector = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Get current date for display
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
   return (
-    <div className="p-8 space-y-8">
-      <div className="p-6 bg-cyan-500 shadow-md rounded-lg">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold">Upload Video</h1>
-          <div className="space-y-4">
-            <input
-              type="file"
-              accept="video/*"
-              onChange={handleVideoUpload}
-              className="w-full text-sm text-black file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
+    <div className="flex min-h-screen bg-gray-900 text-white p-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+        {/* Upload Section */}
+        <div className="lg:col-span-1">
+          <div className="bg-gray-800 rounded-lg p-6 shadow-lg h-full">
+            <h1 className="text-2xl font-bold mb-6">Upload Video</h1>
+            
+            <div 
+              className={`border-2 border-dashed ${dragActive ? 'border-cyan-400' : 'border-cyan-600'} rounded-lg p-8 mb-6 flex flex-col items-center justify-center cursor-pointer transition-colors`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              onClick={openFileSelector}
+            >
+              <input 
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="video/*"
+                onChange={handleVideoUpload}
+              />
+              <Upload className="text-cyan-400 w-12 h-12 mb-4" />
+              <p className="text-center font-medium">
+                Drag and drop your<br />video file here
+              </p>
+              <p className="text-cyan-500 mt-4 text-center">or</p>
+              <button
+                className="mt-4 bg-cyan-500 hover:bg-cyan-600 text-white font-medium py-2 px-6 rounded-md transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFileSelector();
+                }}
+              >
+                Choose File
+              </button>
+            </div>
+            
             <button
               onClick={handleSubmit}
               disabled={!video}
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-green-600 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 disabled:bg-green-800 disabled:opacity-50 text-white font-medium rounded-md transition-colors"
             >
               Process Video
             </button>
+            
             {video && (
-              <p className="text-sm text-gray-600">
-                Selected file: {video.name}
+              <p className="mt-4 text-sm text-cyan-400 flex items-center">
+                <FileText className="mr-2 h-4 w-4" />
+                Selected: {video.name}
               </p>
             )}
           </div>
         </div>
-      </div>
-
-      <div className="bg-gray-700 shadow-md rounded-lg">
-        <div className="overflow-x-auto pt-6 px-6 pb-6">
-          <h2 className="text-xl font-semibold mb-4">Exam Detection</h2>
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-400">
-                <th className="border px-4 py-2">Video Name</th>
-                <th className="border px-4 py-2">image</th>
-                <th className="border px-4 py-2">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row, index) => (
-                <tr key={index} className="border-t">
-                  <td className="px-4 py-2">{row.videoName}</td>
-                  <td className="px-4 py-2">{row.image}</td>
-                  <td className="px-4 py-2">{row.timestamp}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        
+        {/* Results Section */}
+        <div className="lg:col-span-2">
+          <div className="bg-gray-800 rounded-lg shadow-lg h-full">
+            <div className="p-6 border-b border-gray-700">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div className="flex items-center">
+                  <AlertTriangle className="text-yellow-400 mr-2" />
+                  <h2 className="text-2xl font-bold">Exam Detection</h2>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 mt-4 md:mt-0">
+                  <div className="bg-gray-900 rounded-lg px-4 py-3 flex items-center">
+                    <AlertTriangle className="text-yellow-400 mr-2" />
+                    <span className="text-gray-400 mr-2">Incidents:</span>
+                    <span className="text-xl font-bold">{tableData.length}</span>
+                  </div>
+                  
+                  <div className="bg-gray-900 rounded-lg px-4 py-3 flex items-center">
+                    <Clock className="text-cyan-400 mr-2" />
+                    <span className="text-lg">{currentDate}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-700 text-gray-300">
+                    <th className="py-4 px-6 text-left">Video Name</th>
+                    <th className="py-4 px-6 text-left">Incident Frame</th>
+                    <th className="py-4 px-6 text-left">Timestamp</th>
+                    <th className="py-4 px-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableData.map((row, index) => (
+                    <tr 
+                      key={index} 
+                      className="border-t border-gray-700 hover:bg-gray-750"
+                    >
+                      <td className="py-4 px-6">
+                        <div className="flex items-center">
+                          <Film className="text-cyan-400 mr-2 h-4 w-4" />
+                          <span className="font-medium">{row.videoName}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center">
+                          <div className="h-10 w-16 bg-gray-700 rounded flex items-center justify-center mr-3 relative">
+                            <ImageIcon className="text-cyan-400 h-5 w-5" />
+                            <div className="absolute -top-1 -right-1 h-4 w-4 bg-yellow-500 rounded-full flex items-center justify-center">
+                              <AlertTriangle className="h-3 w-3 text-gray-900" />
+                            </div>
+                          </div>
+                          <span>{row.image}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center">
+                          <Clock className="text-cyan-400 mr-2 h-4 w-4" />
+                          <span>{row.timestamp}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <button className="text-cyan-400 hover:text-cyan-300 font-medium flex items-center">
+                          <Eye className="mr-1 h-4 w-4" />
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
