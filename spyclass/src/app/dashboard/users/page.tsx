@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { useEffect, useRef, useState } from 'react';
 import { UserRound, Clock, Percent, Users, Camera, CameraOff } from 'lucide-react';
 
@@ -14,6 +16,8 @@ export default function PeopleCountingPage() {
   const [tableData, setTableData] = useState<TableRow[]>([]);
   const [scanning, setScanning] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
+  const router = useRouter();
+
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,9 +59,10 @@ export default function PeopleCountingPage() {
     });
 
     const data = await res.json();
+    console.log(data);
     if (data.result) {
       const newEntry: TableRow = {
-        picture: 'new_student.png',
+        picture: '/home/renish/projects/React_learning/spyclass/public/students/undefined.jpg',
         studentName: data.result,
         Enterytime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         Percentage: (Math.floor(Math.random() * 50) + 50).toString(),
@@ -136,11 +141,12 @@ export default function PeopleCountingPage() {
             <div className="p-6 border-b border-gray-700 flex justify-between items-center">
               <h2 className="text-2xl font-bold">Attendance Record</h2>
               <div className="flex gap-4">
-                <div className="bg-gray-900 rounded-lg px-4 py-3 flex items-center">
-                  <Percent className="text-cyan-400 mr-2" />
-                  <span className="text-gray-400 mr-2">Average:</span>
-                  <span className="text-xl font-bold">{averagePercentage}%</span>
-                </div>
+              <button
+              className="mt-4 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-md transition-colors"
+              onClick={() => router.push('/dashboard/add-student')}
+            >
+              Add New Student
+            </button>
                 <div className="bg-gray-900 rounded-lg px-4 py-3 flex items-center">
                   <Users className="text-cyan-400 mr-2" />
                   <span className="text-lg">{tableData.length} Students</span>
