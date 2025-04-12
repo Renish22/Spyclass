@@ -10,6 +10,7 @@ interface TableRow {
   studentName: string;
   Enterytime: string;
   Percentage: string;
+  photoPath: string;
 }
 
 export default function PeopleCountingPage() {
@@ -59,11 +60,17 @@ export default function PeopleCountingPage() {
     });
 
     const data = await res.json();
-    console.log(data);
+    // console.log(data);
     if (data.result) {
+      const fixedJson = data.result.replace(/'/g, '"');
+      const jsonData = JSON.parse(fixedJson);
+
+      // console.log('Name:', jsonData.name);
+      // console.log('Photo Path:', jsonData.photoPath);
       const newEntry: TableRow = {
         picture: '/home/renish/projects/React_learning/spyclass/public/students/undefined.jpg',
-        studentName: data.result,
+        photoPath: jsonData.photoPath,
+        studentName: jsonData.name,
         Enterytime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         Percentage: (Math.floor(Math.random() * 50) + 50).toString(),
       };
@@ -168,9 +175,17 @@ export default function PeopleCountingPage() {
                   {tableData.map((row, index) => (
                     <tr key={index} className="border-t border-gray-700 hover:bg-gray-750">
                       <td className="py-4 px-6">
-                        <div className="h-10 w-10 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden">
+                        {/* <div className="h-10 w-10 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden">
                           <UserRound className="text-cyan-400 h-6 w-6" />
+                        </div> */}
+                        <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-600">
+                          <img
+                            src={row.photoPath}
+                            alt={row.studentName}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
+
                       </td>
                       <td className="py-4 px-6 font-medium">{row.studentName}</td>
                       <td className="py-4 px-6">

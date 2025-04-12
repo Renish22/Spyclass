@@ -47,10 +47,16 @@ if __name__ == '__main__':
     result = scan_qr_from_image(image_path)
     if result:
         student_name, photo_path = get_student_info(result)
+        result_dict = {
+            "name": f"{result} Unknown",
+            "photoPath": "unknown"
+        }
         if student_name!= None:
-            print(student_name, flush=True)
+            result_dict["name"] = student_name
+            result_dict["photoPath"] = photo_path.replace("/home/renish/projects/React_learning/spyclass/public", "")
+            print(result_dict, flush=True)
         else:
-            print(f"{result} Unknown", flush=True)
+            print(f"{result_dict}", flush=True)
         sys.exit(0)
     else:
         print("No QR code detected", flush=True)
