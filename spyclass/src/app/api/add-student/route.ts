@@ -1,48 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import FormData from 'form-data';
+import axios from 'axios';
 
 export async function POST(req: NextRequest) {
   const data = await req.json();
-  // console.log('Received data:', data); // Debug log
-
-  const { name, address, enrollment } = data;
+  const { name, address, enrollment, image } = data;
 
   const tempImagePath = path.join(process.cwd(), 'public', 'students', `${enrollment}.jpg`);
-  const pythonScriptPath = path.join(process.cwd(), 'scripts', 'generate_face_vector.py');
-  const pythonPath = '/usr/local/mirasys/venv/bin/python';
+  const imagePath = path.join('students', `${enrollment}.jpg`);
 
-  // Save student image temporarily for embedding
+  // Save the image temporarily
   try {
-    const imageBuffer = Buffer.from(data.image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+    const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
     fs.writeFileSync(tempImagePath, imageBuffer);
   } catch (err) {
     console.error('Error saving image:', err);
     return NextResponse.json({ error: 'Image saving failed' }, { status: 500 });
   }
 
-  return new Promise((resolve) => {
-    const pythonProcess = spawn(pythonPath, [pythonScriptPath, tempImagePath, enrollment, name, address]);
+  const form = new FormData();
+  form.append('file', fs.createReadStream(tempImagePath));
+  form.append('enrollment_id', enrollment);
+  form.append('student_name', name);
+  form.append('student_address', address);
+  form.append('image_path', imagePath);
 
-    let result = '';
-    let error = '';
-
-    pythonProcess.stdout.on('data', (data) => {
-      result += data.toString();
+  try {
+    const response = await axios.post('http://localhost:8000/add-student', form, {
+      headers: form.getHeaders(),
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
     });
 
-    pythonProcess.stderr.on('data', (data) => {
-      error += data.toString();
-    });
-
-    pythonProcess.on('close', (code) => {
-      if (code === 0) {
-        resolve(NextResponse.json({ success: true, message: 'Student added successfully' }));
-      } else {
-        console.error('Python error:', error);
-        resolve(NextResponse.json({ error: 'Failed to generate embedding or save to Qdrant' }, { status: 500 }));
-      }
-    });
-  });
+    return NextResponse.json({ success: true, message: 'Student added successfully' });
+  } catch (error: any) {
+    console.error('FRS request error:', error?.response?.data || error.message);
+    return NextResponse.json({ success: false, message: error?.response?.data.message || error.message });
+    // return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

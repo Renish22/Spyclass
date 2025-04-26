@@ -7,10 +7,13 @@ from deepface import DeepFace
 from sklearn.cluster import DBSCAN
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
+from ultralytics import YOLO
+import cv2
 
 # Constants
 COLLECTION_NAME = "students"
 QDRANT_HOST = "http://localhost:6333"
+YOLO_MODEL_PATH = "/home/renish/projects/yolov11s-face.pt"
 
 # Initialize Qdrant client
 client = QdrantClient(QDRANT_HOST)
@@ -23,12 +26,29 @@ def ensure_collection():
             vectors_config=VectorParams(size=4096, distance=Distance.COSINE)
         )
 
-def extract_embedding(img_path):
-    obj = DeepFace.represent(img_path=img_path, model_name="VGG-Face", enforce_detection=False)
+def detect_and_crop_face(img_path):
+    model = YOLO(YOLO_MODEL_PATH)
+    results = model(img_path)[0]
+
+    if not results.boxes or len(results.boxes) == 0:
+        raise Exception("No face detected!")
+
+    # Take the first detected face
+    box = results.boxes[0].xyxy[0].cpu().numpy().astype(int)  # [x1, y1, x2, y2]
+    image = cv2.imread(img_path)
+    face = image[box[1]:box[3], box[0]:box[2]]
+
+    # cropped_path = f"/tmp/cropped_{uuid.uuid4().hex}.jpg"
+    # face.save(cropped_path)
+    return face
+
+def extract_embedding(cropped_face):
+    print(f"Extracting for {cropped_face}", flush=True)
+    obj = DeepFace.represent(img_path=cropped_face, model_name="VGG-Face", enforce_detection=False)
     return obj[0]["embedding"]
 
 def save_to_qdrant(vector, enrollment_id, photo_path, student_name, student_address):
-    random_id = uuid.uuid4().int >> 64  # Qdrant requires int type for ID,
+    random_id = uuid.uuid4().int >> 64
     client.upsert(
         collection_name=COLLECTION_NAME,
         points=[
@@ -47,20 +67,19 @@ def save_to_qdrant(vector, enrollment_id, photo_path, student_name, student_addr
     )
 
 def main():
-    # if len(sys.argv) != 5:
-    #     print("Usage: python process_face.py <image_path> <enrollment_id> <name> <address>")
-    #     sys.exit(1)
+    # img_path, enrollment_id, student_name, student_address = sys.argv[1:]
+    img_path = "/home/renish/Pictures/test/2255.jpg"
+    enrollment_id = 11312312412
+    student_name = "Renish"
+    student_address = "Unjha"
 
-    img_path, enrollment_id, student_name, student_address = sys.argv[1:]
-    
-    # img_path = "/home/renish/projects/React_learning/spyclass/public/students/undefined.jpg"
-    # enrollment_id = 11312312412
-    # student_name = "Renish"
-    # student_address = "Unjha"
     print("RECEIVED", img_path, enrollment_id, student_name, student_address, flush=True)
     ensure_collection()
-    embedding = extract_embedding(img_path)
-    print("RENISH NU EMBEDDING",embedding)
+
+    cropped_face = detect_and_crop_face(img_path)
+    embedding = extract_embedding(cropped_face)
+
+    print("RENISH NU EMBEDDING", embedding)
     save_to_qdrant(embedding, enrollment_id, img_path, student_name, student_address)
     print("Student added to Qdrant.")
 

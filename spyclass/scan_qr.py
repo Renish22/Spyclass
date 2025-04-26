@@ -53,7 +53,7 @@ if __name__ == '__main__':
         }
         if student_name!= None:
             result_dict["name"] = student_name
-            result_dict["photoPath"] = photo_path.replace("/home/renish/projects/React_learning/spyclass/public", "")
+            result_dict["photoPath"] = photo_path
             print(result_dict, flush=True)
         else:
             print(f"{result_dict}", flush=True)

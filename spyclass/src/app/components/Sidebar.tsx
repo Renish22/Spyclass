@@ -58,16 +58,16 @@ export const Sidebar: React.FC = () => {
       label: 'Attandance',
       icon: < ClipboardCheck size={20} />,
     },
-    {
-      href: '/dashboard/reports',
-      label: 'Classroom Monitoring',
-      icon: <Radio size={20} />,
-    },
-    {
-      href: '/dashboard/settings',
-      label: 'Exam cheat detaction',
-      icon: <School size={20} />,
-    },
+    // {
+    //   href: '/dashboard/reports',
+    //   label: 'Classroom Monitoring',
+    //   icon: <Radio size={20} />,
+    // },
+    // {
+    //   href: '/dashboard/settings',
+    //   label: 'Exam cheat detaction',
+    //   icon: <School size={20} />,
+    // },
   ];
 
   return (

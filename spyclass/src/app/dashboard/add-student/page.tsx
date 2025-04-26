@@ -54,11 +54,12 @@ export default function AddStudentPage() {
     });
 
     const data = await res.json();
+    console.log(data)
     if (data.success) {
-      alert('Student added successfully!');
+      alert(data.message);
       router.push('/dashboard/users');
     } else {
-      alert('Failed to add student.');
+      alert(data.message);
     }
   };
 

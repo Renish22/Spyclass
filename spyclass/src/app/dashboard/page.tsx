@@ -58,7 +58,7 @@ export default function Dashboard() {
           color="green"
         />
         
-        <ModuleCard 
+        {/* <ModuleCard 
           title="Classroom Monitoring"
           icon={<Video size={24} className="text-yellow-500" />}
           description="Real-time classroom engagement tracking"
@@ -80,7 +80,7 @@ export default function Dashboard() {
           ]}
           link="/dashboard/settings"
           color="red"
-        />
+        /> */}
       </div>
     </div>
   );
